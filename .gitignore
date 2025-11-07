@@ -1,0 +1,86 @@
+# ==========================
+# OS / Editor Junk
+# ==========================
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+*.swo
+.idea/
+.vscode/
+__pycache__/
+*.py[cod]
+
+# ==========================
+# Python / Django
+# ==========================
+venv/
+env/
+*.sqlite3
+db.sqlite3
+*.pyc
+*.pyo
+*.pyd
+*.db
+media/
+staticfiles/
+*.pot
+*.mo
+*.log
+*.bak
+*.tmp
+# Local settings (if any)
+settings_local.py
+.env
+*.env
+
+# ==========================
+# MongoDB / Database Dumps
+# ==========================
+*.bson
+*.json
+dump/
+data/
+mongod.lock
+
+# ==========================
+# Node / React
+# ==========================
+frontend/node_modules/
+frontend/.env
+frontend/build/
+frontend/.parcel-cache/
+frontend/.next/
+frontend/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# ==========================
+# System / Misc
+# ==========================
+*.tar.gz
+*.zip
+*.7z
+*.bak
+*.tmp
+*.orig
+*.rej
+
+# ==========================
+# Coverage / Testing
+# ==========================
+htmlcov/
+.tox/
+.coverage
+coverage.xml
+nosetests.xml
+.pytest_cache/
+.cache/
+
+# ==========================
+# Virtualenv wrapper files
+# ==========================
+Pipfile.lock
+poetry.lock
