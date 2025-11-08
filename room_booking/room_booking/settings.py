@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'booking',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -75,8 +76,12 @@ WSGI_APPLICATION = 'room_booking.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'NAME': 'GRFS-Booking-Django',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'room_booking',
+        'USER': 'room_admin',
+        'PASSWORD': 'fegwasd20061',
+        'HOST': 'localhost',  # or your PostgreSQL host (e.g., AWS/Railway)
+        'PORT': '5432',       # default port
     }
 }
 
