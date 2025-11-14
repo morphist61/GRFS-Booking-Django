@@ -1,9 +1,14 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth import get_user_model
-from datetime import datetime
 
 class CustomUser(AbstractUser):
+    
+    email = models.EmailField(max_length=100, unique=True)
+    
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+
     ROLE_CHOICES = [
         ('user', 'User'),
         ('mentor', 'Mentor'),

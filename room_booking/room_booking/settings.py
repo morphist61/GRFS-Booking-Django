@@ -11,21 +11,28 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+# Look for .env in the room_booking directory (parent of room_booking/room_booking)
+env_path = BASE_DIR / '.env'
+load_dotenv(dotenv_path=env_path)
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-0ijbb%k3rf*5q6#p7z@!dr^^2wca98@r(sy3@np@(52wdl_a06'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-0ijbb%k3rf*5q6#p7z@!dr^^2wca98@r(sy3@np@(52wdl_a06')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
 
 
 # Application definition
@@ -79,11 +86,11 @@ WSGI_APPLICATION = 'room_booking.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'room_booking',
-        'USER': 'room_admin',
-        'PASSWORD': 'fegwasd20061',
-        'HOST': 'localhost',  # or your PostgreSQL host (e.g., AWS/Railway)
-        'PORT': '5432',       # default port
+        'NAME': os.getenv('DB_NAME', 'room_booking'),
+        'USER': os.getenv('DB_USER', 'room_admin'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'fegwasd20061'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
@@ -114,7 +121,7 @@ AUTH_USER_MODEL = 'booking.CustomUser'
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/New_York'  # EST/EDT
 
 USE_I18N = True
 
@@ -141,7 +148,8 @@ REST_FRAMEWORK = {
     ),
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React dev server
-]
+CORS_ALLOWED_ORIGINS = os.getenv(
+    'CORS_ALLOWED_ORIGINS', 
+    'http://localhost:3000'
+).split(',') if os.getenv('CORS_ALLOWED_ORIGINS') else ["http://localhost:3000"]
 

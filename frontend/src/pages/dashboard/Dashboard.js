@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getUser } from '../services/api';
+import { getUser } from '../../services/api';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);

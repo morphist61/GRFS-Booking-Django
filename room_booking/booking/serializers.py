@@ -49,7 +49,7 @@ class BookingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Booking
-        fields = ['id', 'user', 'rooms', 'room_ids', 'date', 'start_time', 'end_time', 'status']
+        fields = ['id', 'user', 'rooms', 'room_ids', 'start_datetime', 'end_datetime', 'status', 'created_at']
 
     def create(self, validated_data):
         """Automatically assign the logged-in user when creating a booking"""
