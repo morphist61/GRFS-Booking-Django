@@ -35,12 +35,65 @@ A full-stack room booking system built with Django REST Framework backend and Re
 
 ## Installation
 
-### Backend Setup
+### Initial Setup (First Time)
 
-1. **Clone the repository**
+1. **Clone the repository** (if you don't have it locally)
    ```bash
    git clone <repository-url>
    cd GRFS-Booking-Django
+   ```
+
+   Or if you already have the repository locally and want to connect it to GitHub:
+   ```bash
+   # Navigate to your project directory
+   cd GRFS-Booking-Django
+   
+   # Add GitHub remote (replace with your repository URL)
+   git remote add origin https://github.com/yourusername/GRFS-Booking-Django.git
+   
+   # Push to GitHub
+   git branch -M main
+   git push -u origin main
+   ```
+
+### Working from Multiple Computers
+
+To work on this project from another computer:
+
+1. **Clone the repository on the new computer**
+   ```bash
+   git clone https://github.com/yourusername/GRFS-Booking-Django.git
+   cd GRFS-Booking-Django
+   ```
+
+2. **Set up the backend** (follow Backend Setup steps below)
+
+3. **Set up the frontend** (follow Frontend Setup steps below)
+
+4. **Create your `.env` file** (copy from `env.example` or create new)
+   ```bash
+   # In room_booking directory
+   cp env.example .env
+   # Then edit .env with your configuration
+   ```
+
+5. **Pull latest changes** before starting work
+   ```bash
+   git pull origin main
+   ```
+
+6. **Push your changes** when done
+   ```bash
+   git add .
+   git commit -m "Your commit message"
+   git push origin main
+   ```
+
+### Backend Setup
+
+1. **Navigate to the backend directory**
+   ```bash
+   cd room_booking
    ```
 
 2. **Create and activate a virtual environment**
