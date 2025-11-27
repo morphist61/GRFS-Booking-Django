@@ -105,8 +105,28 @@ class BookingSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """Automatically assign the logged-in user when creating a booking"""
+        from datetime import timedelta
+        
         user = self.context['request'].user
         validated_data['user'] = user
-        # Ensure status is always 'Pending' for new bookings
-        validated_data['status'] = 'Pending'
+        
+        # Determine booking status based on duration and number of rooms
+        # Auto-approve if: duration < 6 hours AND rooms <= 2
+        # Otherwise, require manual approval (Pending)
+        start_datetime = validated_data.get('start_datetime')
+        end_datetime = validated_data.get('end_datetime')
+        rooms = validated_data.get('rooms', [])  # room_ids maps to 'rooms' via source, returns Room objects
+        
+        if start_datetime and end_datetime:
+            booking_duration = end_datetime - start_datetime
+            duration_hours = booking_duration.total_seconds() / 3600
+            num_rooms = len(rooms) if rooms else 0
+            
+            if duration_hours < 6 and num_rooms <= 2:
+                validated_data['status'] = 'Approved'
+            else:
+                validated_data['status'] = 'Pending'
+        else:
+            validated_data['status'] = 'Pending'
+        
         return super().create(validated_data)

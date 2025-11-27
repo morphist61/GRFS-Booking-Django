@@ -220,11 +220,11 @@ class CreateBookingView(APIView):
 
                 # Create the booking with the selected rooms
                 # Pass datetime objects directly (serializer will handle them)
+                # Status will be auto-determined in the serializer based on duration and room count
                 booking_data = {
                     "room_ids": room_ids,
                     "start_datetime": start_datetime,
                     "end_datetime": end_datetime,
-                    "status": "Pending",
                 }
 
                 serializer = BookingSerializer(data=booking_data, context={'request': request})

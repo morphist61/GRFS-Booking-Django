@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { getAllBookings, getRooms, deleteBooking, updateBooking } from '../../services/api';
+import React, { useEffect, useState, useCallback } from 'react';
+import { getAllBookings, getRooms, deleteBooking, updateBooking, checkAvailability } from '../../services/api';
 import '../../styles/AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -12,11 +12,39 @@ const AdminDashboard = () => {
   const [selectedRoomId, setSelectedRoomId] = useState('');
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [editAvailableHours, setEditAvailableHours] = useState([]);
+  const [editUnavailableSlots, setEditUnavailableSlots] = useState([]);
+  const [editLoading, setEditLoading] = useState(false);
+
+  const fetchEditAvailability = useCallback(async (date, roomIds) => {
+    if (!date || roomIds.length === 0) return;
+    
+    setEditLoading(true);
+    try {
+      const response = await checkAvailability(date, roomIds);
+      setEditAvailableHours(response.data.available_hours || []);
+      setEditUnavailableSlots(response.data.unavailable_slots || []);
+    } catch (err) {
+      console.error('Failed to fetch availability:', err);
+      setEditAvailableHours([]);
+      setEditUnavailableSlots([]);
+    } finally {
+      setEditLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchBookings();
     fetchRooms();
   }, []);
+
+  useEffect(() => {
+    if (isEditing && editForm.selectedDate && editForm.room_ids) {
+      fetchEditAvailability(editForm.selectedDate, editForm.room_ids);
+    }
+  }, [isEditing, editForm.selectedDate, editForm.room_ids, fetchEditAvailability]);
 
   const fetchBookings = async () => {
     try {
@@ -87,6 +115,161 @@ const AdminDashboard = () => {
     return `${displayHour}:00 ${period}`;
   };
 
+  const handleEditBooking = () => {
+    if (!selectedBooking) return;
+    
+    setIsEditing(true);
+    const startDate = selectedBooking.start_datetime ? new Date(selectedBooking.start_datetime).toISOString().split('T')[0] : '';
+    const startDateObj = selectedBooking.start_datetime ? new Date(selectedBooking.start_datetime) : null;
+    const endDateObj = selectedBooking.end_datetime ? new Date(selectedBooking.end_datetime) : null;
+    
+    let startHour = '';
+    let endHour = '';
+    
+    if (startDateObj) {
+      const startDateTimeStr = selectedBooking.start_datetime;
+      if (startDateTimeStr) {
+        const hourMatch = startDateTimeStr.match(/T(\d{2}):/);
+        if (hourMatch) {
+          startHour = parseInt(hourMatch[1]).toString();
+        }
+      }
+    }
+    
+    if (endDateObj) {
+      const endDateTimeStr = selectedBooking.end_datetime;
+      if (endDateTimeStr) {
+        const hourMatch = endDateTimeStr.match(/T(\d{2}):/);
+        if (hourMatch) {
+          endHour = parseInt(hourMatch[1]).toString();
+        }
+      }
+    }
+    
+    const roomIds = selectedBooking.rooms.map(room => room.id);
+    
+    setEditForm({
+      selectedDate: startDate,
+      startTime: startHour,
+      endTime: endHour,
+      room_ids: roomIds,
+    });
+    
+    if (startDate) {
+      fetchEditAvailability(startDate, roomIds);
+    }
+  };
+
+  const handleEditDateChange = (e) => {
+    const newDate = e.target.value;
+    setEditForm({...editForm, selectedDate: newDate, startTime: '', endTime: ''});
+    if (newDate && editForm.room_ids) {
+      fetchEditAvailability(newDate, editForm.room_ids);
+    }
+  };
+
+  const handleDateKeyDown = (e) => {
+    // Prevent typing but allow navigation keys
+    if (e.key !== 'Tab' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown' && e.key !== 'Enter') {
+      e.preventDefault();
+    }
+  };
+
+  const handleDateInputClick = (e) => {
+    // Try to open the date picker
+    if (e.target.showPicker) {
+      try {
+        e.target.showPicker();
+      } catch (err) {
+        // Fallback to focus if showPicker is not supported
+        e.target.focus();
+      }
+    }
+  };
+
+  const getEndTimeOptions = (startHour, unavailableSlots, roomIds) => {
+    if (!startHour) return [];
+    
+    const startHourInt = parseInt(startHour);
+    const options = [];
+    let maxEndHour = 24;
+    
+    for (const slot of unavailableSlots) {
+      if (roomIds.includes(slot.room_id)) {
+        const slotStartHour = slot.start_hour;
+        if (slotStartHour !== undefined && slotStartHour > startHourInt && slotStartHour < maxEndHour) {
+          maxEndHour = slotStartHour;
+        }
+      }
+    }
+    
+    const actualMaxHour = Math.min(maxEndHour, 24);
+    for (let hour = startHourInt + 1; hour <= actualMaxHour; hour++) {
+      options.push({
+        value: hour,
+        label: formatHour(hour)
+      });
+    }
+    
+    return options;
+  };
+
+  const handleUpdateBooking = async () => {
+    if (!selectedBooking || !editForm.selectedDate || !editForm.startTime || !editForm.endTime) {
+      alert('Please select a date, start time, and end time');
+      return;
+    }
+
+    if (parseInt(editForm.startTime) >= parseInt(editForm.endTime)) {
+      alert('End time must be after start time');
+      return;
+    }
+
+    try {
+      let startHour = parseInt(editForm.startTime);
+      let endHour = parseInt(editForm.endTime);
+      
+      let endDate = editForm.selectedDate;
+      if (endHour === 24) {
+        endHour = 0;
+        const date = new Date(editForm.selectedDate);
+        date.setDate(date.getDate() + 1);
+        endDate = date.toISOString().split('T')[0];
+      }
+      
+      const startDatetime = `${editForm.selectedDate}T${String(startHour).padStart(2, '0')}:00:00`;
+      const endDatetime = `${endDate}T${String(endHour).padStart(2, '0')}:00:00`;
+
+      await updateBooking(selectedBooking.id, {
+        start_datetime: startDatetime,
+        end_datetime: endDatetime,
+        room_ids: editForm.room_ids,
+      });
+      
+      // Refresh bookings and close edit mode
+      await fetchBookings();
+      setIsEditing(false);
+      setEditForm({});
+      setEditAvailableHours([]);
+      setEditUnavailableSlots([]);
+      
+      // Update selected booking to reflect changes
+      const updatedBooking = bookings.find(b => b.id === selectedBooking.id);
+      if (updatedBooking) {
+        setSelectedBooking(updatedBooking);
+      }
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Failed to update booking');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditForm({});
+    setEditAvailableHours([]);
+    setEditUnavailableSlots([]);
+  };
+
   const getBookingsForDate = (date) => {
     const filteredBookings = getFilteredBookings();
     const dateStr = date.toISOString().split('T')[0];
@@ -140,6 +323,10 @@ const AdminDashboard = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedBooking(null);
+    setIsEditing(false);
+    setEditForm({});
+    setEditAvailableHours([]);
+    setEditUnavailableSlots([]);
   };
 
   const handleDeleteBooking = async () => {
@@ -481,69 +668,156 @@ const AdminDashboard = () => {
               <button className="modal-close-btn" onClick={handleCloseModal}>×</button>
             </div>
             <div className="booking-modal-content">
-              <div className="booking-detail-item">
-                <label>User:</label>
-                <span>{selectedBooking.user.username} ({selectedBooking.user.email})</span>
-              </div>
-              <div className="booking-detail-item">
-                <label>Rooms:</label>
-                <span>{selectedBooking.rooms.map(r => `${r.floor.name} - ${r.name}`).join(', ')}</span>
-              </div>
-              <div className="booking-detail-item">
-                <label>Start Time:</label>
-                <span>{formatDate(selectedBooking.start_datetime)} {formatTime(selectedBooking.start_datetime)}</span>
-              </div>
-              <div className="booking-detail-item">
-                <label>End Time:</label>
-                <span>{formatDate(selectedBooking.end_datetime)} {formatTime(selectedBooking.end_datetime)}</span>
-              </div>
-              <div className="booking-detail-item">
-                <label>Status:</label>
-                <span className={`status-badge status-${selectedBooking.status.toLowerCase()}`}>
-                  {selectedBooking.status}
-                </span>
-              </div>
-              <div className="booking-detail-item">
-                <label>Created:</label>
-                <span>{formatDate(selectedBooking.created_at)} {formatTime(selectedBooking.created_at)}</span>
-              </div>
-            </div>
-            <div className="booking-modal-actions">
-              <div className="status-actions">
-                <label>Change Status:</label>
-                <div className="status-buttons">
-                  {selectedBooking.status !== 'Pending' && (
-                    <button 
-                      className="status-btn status-pending"
-                      onClick={() => handleStatusChange('Pending')}
-                    >
-                      Set to Pending
-                    </button>
+              {isEditing ? (
+                <div className="booking-edit-form">
+                  <div className="edit-form-group">
+                    <label htmlFor="editDate">Date:</label>
+                    <input
+                      type="date"
+                      id="editDate"
+                      value={editForm.selectedDate}
+                      onChange={handleEditDateChange}
+                      onKeyDown={handleDateKeyDown}
+                      onKeyPress={(e) => e.preventDefault()}
+                      min={new Date().toISOString().split('T')[0]}
+                      max={new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]}
+                      required
+                      className="form-input date-input"
+                      onClick={handleDateInputClick}
+                    />
+                  </div>
+                  {editLoading && <div className="loading-message">Loading availability...</div>}
+                  {editForm.selectedDate && editAvailableHours.length > 0 && (
+                    <div className="edit-form-group">
+                      <label htmlFor="editStartTime">Start Time:</label>
+                      <select
+                        id="editStartTime"
+                        value={editForm.startTime}
+                        onChange={(e) => setEditForm({...editForm, startTime: e.target.value})}
+                        required
+                        className="form-input"
+                      >
+                        <option value="">Select start time</option>
+                        {editAvailableHours.map(hour => (
+                          <option key={hour} value={hour}>
+                            {formatHour(hour)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   )}
-                  {selectedBooking.status !== 'Approved' && (
-                    <button 
-                      className="status-btn status-approved"
-                      onClick={() => handleStatusChange('Approved')}
-                    >
-                      Approve
-                    </button>
-                  )}
-                  {selectedBooking.status !== 'Cancelled' && (
-                    <button 
-                      className="status-btn status-cancelled"
-                      onClick={() => handleStatusChange('Cancelled')}
-                    >
-                      Cancel
-                    </button>
+                  {editForm.startTime && (
+                    <div className="edit-form-group">
+                      <label htmlFor="editEndTime">End Time:</label>
+                      <select
+                        id="editEndTime"
+                        value={editForm.endTime}
+                        onChange={(e) => setEditForm({...editForm, endTime: e.target.value})}
+                        required
+                        className="form-input"
+                      >
+                        <option value="">Select end time</option>
+                        {getEndTimeOptions(parseInt(editForm.startTime), editUnavailableSlots, editForm.room_ids).map(opt => (
+                          <option key={opt.value} value={opt.value}>
+                            {formatHour(opt.value)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   )}
                 </div>
-              </div>
-              <button 
-                className="delete-btn"
-                onClick={handleDeleteBooking}
-              >
-                Delete Booking
-              </button>
+              ) : (
+                <>
+                  <div className="booking-detail-item">
+                    <label>User:</label>
+                    <span>{selectedBooking.user.username} ({selectedBooking.user.email})</span>
+                  </div>
+                  <div className="booking-detail-item">
+                    <label>Rooms:</label>
+                    <span>{selectedBooking.rooms.map(r => `${r.floor.name} - ${r.name}`).join(', ')}</span>
+                  </div>
+                  <div className="booking-detail-item">
+                    <label>Start Time:</label>
+                    <span>{formatDate(selectedBooking.start_datetime)} {formatTime(selectedBooking.start_datetime)}</span>
+                  </div>
+                  <div className="booking-detail-item">
+                    <label>End Time:</label>
+                    <span>{formatDate(selectedBooking.end_datetime)} {formatTime(selectedBooking.end_datetime)}</span>
+                  </div>
+                  <div className="booking-detail-item">
+                    <label>Status:</label>
+                    <span className={`status-badge status-${selectedBooking.status.toLowerCase()}`}>
+                      {selectedBooking.status}
+                    </span>
+                  </div>
+                  <div className="booking-detail-item">
+                    <label>Created:</label>
+                    <span>{formatDate(selectedBooking.created_at)} {formatTime(selectedBooking.created_at)}</span>
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="booking-modal-actions">
+              {isEditing ? (
+                <div className="edit-actions">
+                  <button 
+                    className="save-btn"
+                    onClick={handleUpdateBooking}
+                  >
+                    Save Changes
+                  </button>
+                  <button 
+                    className="cancel-edit-btn"
+                    onClick={handleCancelEdit}
+                  >
+                    Cancel Edit
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <button 
+                    className="edit-btn"
+                    onClick={handleEditBooking}
+                  >
+                    Edit Booking
+                  </button>
+                  <div className="status-actions">
+                    <label>Change Status:</label>
+                    <div className="status-buttons">
+                      {selectedBooking.status !== 'Pending' && (
+                        <button 
+                          className="status-btn status-pending"
+                          onClick={() => handleStatusChange('Pending')}
+                        >
+                          Set to Pending
+                        </button>
+                      )}
+                      {selectedBooking.status !== 'Approved' && (
+                        <button 
+                          className="status-btn status-approved"
+                          onClick={() => handleStatusChange('Approved')}
+                        >
+                          Approve
+                        </button>
+                      )}
+                      {selectedBooking.status !== 'Cancelled' && (
+                        <button 
+                          className="status-btn status-cancelled"
+                          onClick={() => handleStatusChange('Cancelled')}
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <button 
+                    className="delete-btn"
+                    onClick={handleDeleteBooking}
+                  >
+                    Delete Booking
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
