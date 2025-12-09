@@ -27,22 +27,20 @@ services:
       echo "Installing npm dependencies..."
       npm install
       echo "Building React app..."
-      REACT_APP_API_URL=/api/ npm run build
+      CI=false REACT_APP_API_URL=/api/ npm run build
       cd ..
       echo "Creating directories for static files..."
       mkdir -p room_booking/staticfiles/static
       mkdir -p room_booking/booking/templates
       echo "Copying React build files..."
-      if [ -d "frontend/build/static" ]; then
-        cp -r frontend/build/static/* room_booking/staticfiles/static/
-      else
-        echo "WARNING: frontend/build/static directory not found"
+      if [ ! -d "frontend/build/static" ] || [ ! -f "frontend/build/index.html" ]; then
+        echo "ERROR: React build output missing. React build likely failed."
+        exit 1
       fi
-      if [ -f "frontend/build/index.html" ]; then
-        cp frontend/build/index.html room_booking/booking/templates/
-      else
-        echo "WARNING: frontend/build/index.html not found"
-      fi
+
+      cp -r frontend/build/static/* room_booking/staticfiles/static/
+      cp frontend/build/index.html room_booking/booking/templates/
+
       echo "Installing Python dependencies..."
       pip install -r room_booking/requirements.txt
       cd room_booking
@@ -54,7 +52,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.12.0
       - key: NODE_VERSION
-        value: 18.x
+        value: 22.x
       - key: DATABASE_URL
         fromDatabase:
           name: grfs-booking-db
