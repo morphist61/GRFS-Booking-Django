@@ -7,7 +7,7 @@ services:
     buildCommand: |
       cd frontend &&
       npm install &&
-      REACT_APP_API_URL=/api/ npm run build &&
+      REACT_APP_API_URL=/api/ npm start &&
       cd .. &&
       mkdir -p room_booking/staticfiles/static &&
       mkdir -p room_booking/booking/templates &&
