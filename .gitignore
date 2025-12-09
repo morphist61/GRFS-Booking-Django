@@ -38,10 +38,11 @@ settings_local.py
 # MongoDB / Database Dumps
 # ==========================
 *.bson
-*.json
 dump/
 data/
 mongod.lock
+# Note: Removed *.json pattern - it was too broad and ignored package.json
+# If you need to ignore specific JSON files, add them explicitly
 
 # ==========================
 # Node / React

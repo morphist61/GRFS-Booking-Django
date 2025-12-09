@@ -5,7 +5,23 @@ services:
     env: python
     plan: free
     buildCommand: |
+      pwd &&
+      ls -la &&
+      echo "Checking for frontend directory..." &&
+      if [ ! -d "frontend" ]; then
+        echo "ERROR: frontend directory not found in current directory" &&
+        echo "Current directory contents:" &&
+        ls -la &&
+        exit 1
+      fi &&
       cd frontend &&
+      echo "Frontend directory found, checking package.json..." &&
+      if [ ! -f "package.json" ]; then
+        echo "ERROR: package.json not found in frontend directory" &&
+        echo "Frontend directory contents:" &&
+        ls -la &&
+        exit 1
+      fi &&
       npm install &&
       REACT_APP_API_URL=/api/ npm run build &&
       cd .. &&
