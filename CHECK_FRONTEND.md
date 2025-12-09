@@ -65,3 +65,4 @@ GRFS-Booking-Django/
 2. Render will automatically redeploy
 3. Check build logs - should now find `frontend/package.json`
 
+
