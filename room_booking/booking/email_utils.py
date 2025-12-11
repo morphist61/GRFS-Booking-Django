@@ -13,11 +13,6 @@ logger = logging.getLogger(__name__)
 
 def send_account_creation_email(user):
     """Send email confirmation when a new account is created"""
-    # Skip email if email configuration is not set up
-    if not settings.DEFAULT_FROM_EMAIL or not settings.EMAIL_HOST_USER:
-        logger.warning(f"Email configuration not set up. Skipping account creation email to {user.email}")
-        return
-    
     try:
         subject = 'Welcome to GRFS Booking System - Account Created'
         message = f"""
@@ -46,7 +41,7 @@ GRFS Booking System
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
-            fail_silently=True,
+            fail_silently=False,
         )
         logger.info(f"Account creation email sent to {user.email}")
     except Exception as e:
@@ -91,7 +86,7 @@ GRFS Booking System
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
-            fail_silently=True,
+            fail_silently=False,
         )
         logger.info(f"Account approval email sent to {user.email} (approved: {approved})")
     except Exception as e:
@@ -138,7 +133,7 @@ GRFS Booking System
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
-            fail_silently=True,
+            fail_silently=False,
         )
         logger.info(f"Booking creation email sent to {user.email} for booking {booking.id}")
     except Exception as e:
@@ -200,7 +195,7 @@ GRFS Booking System
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
-            fail_silently=True,
+            fail_silently=False,
         )
         logger.info(f"Booking update email sent to {user.email} for booking {booking.id}")
     except Exception as e:
@@ -245,7 +240,7 @@ GRFS Booking System
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
-            fail_silently=True,
+            fail_silently=False,
         )
         logger.info(f"Booking cancellation email sent to {user.email} for booking {booking.id}")
     except Exception as e:
@@ -298,7 +293,7 @@ GRFS Booking System
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
-            fail_silently=True,
+            fail_silently=False,
         )
         logger.info(f"Booking reminder email sent to {user.email} for booking {booking.id}")
     except Exception as e:
