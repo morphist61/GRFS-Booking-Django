@@ -51,18 +51,14 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-brand">
-          <img 
-            src="/grfs-logo.png" 
-            alt="Grand River Friendship Society" 
-            className="navbar-logo"
-          />
+          
           <span className="navbar-brand-text">GRFS Booking</span>
         </Link>
         <div className="navbar-menu">
           {user ? (
             <>
               <Link to="/dashboard" className="navbar-link">My Bookings</Link>
-              <Link to="/bookingpage" className="navbar-link">Book Room</Link>
+              <Link to="/bookingpage" className="navbar-link">Book Rooms</Link>
               {user && user.role === 'admin' && (
                 <Link to="/admin" className="navbar-link">Admin</Link>
               )}
