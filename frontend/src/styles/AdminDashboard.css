@@ -1,9 +1,12 @@
 .admin-dashboard {
   padding: 20px;
   max-width: 100%;
+  width: 100%;
   margin: 0 auto;
   background-color: #f5f5f5;
   min-height: calc(100vh - 80px);
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .admin-dashboard-header {
@@ -17,6 +20,9 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   justify-content: space-between;  /* Spread items across */
   align-items: center;             /* Vertically center */
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .admin-dashboard-header h1 {
@@ -141,6 +147,10 @@
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
 }
 
 /* Day View Styles */
@@ -202,6 +212,9 @@
   grid-template-columns: 120px repeat(7, 1fr);
   border-bottom: 2px solid #e0e0e0;
   background: #f9f9f9;
+  min-width: 800px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .week-hour-label {
@@ -245,6 +258,9 @@
   height: 50px;
   min-height: 50px;
   max-height: 50px;
+  min-width: 800px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .week-hour-cell {
@@ -267,6 +283,8 @@
   grid-template-columns: repeat(7, 1fr);
   border-bottom: 2px solid #e0e0e0;
   background: #f9f9f9;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .month-day-header {
@@ -284,6 +302,8 @@
 .calendar-month-body {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .month-day-cell {
@@ -515,10 +535,12 @@
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   max-width: 600px;
-  width: 100%;
+  width: calc(100% - 40px);
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
+  box-sizing: border-box;
+  margin: 0 auto;
 }
 
 .booking-modal-header {
@@ -802,9 +824,25 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .admin-dashboard {
+    padding: 15px;
+  }
+
+  .admin-dashboard-header {
+    padding: 15px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-dashboard-header h1 {
+    font-size: 24px;
+    width: 100%;
+  }
+
   .header-top {
     flex-direction: column;
     gap: 15px;
+    width: 100%;
   }
 
   .view-controls {
@@ -822,40 +860,180 @@
   .calendar-navigation {
     flex-direction: column;
     gap: 10px;
+    width: 100%;
   }
 
   .current-date-display {
     width: 100%;
     text-align: center;
     margin: 10px 0;
+    font-size: 16px;
   }
 
   .room-filter {
     width: 100%;
     margin: 10px 0 0 0;
     justify-content: center;
+    flex-direction: column;
+    align-items: center;
   }
 
   .room-select {
     min-width: 150px;
-    flex: 1;
-    max-width: 300px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .calendar-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .calendar-week-header,
   .week-hour-row {
-    grid-template-columns: 80px repeat(7, 1fr);
+    grid-template-columns: 60px repeat(7, minmax(80px, 1fr));
+    min-width: 620px;
   }
 
   .week-hour-label {
-    width: 80px;
-    font-size: 12px;
+    width: 60px;
+    font-size: 11px;
+    padding: 5px;
+  }
+
+  .week-day-header {
+    padding: 10px 5px;
+    font-size: 11px;
+  }
+
+  .week-day-number {
+    font-size: 16px;
+  }
+
+  .calendar-month-header {
+    min-width: 100%;
+  }
+
+  .calendar-month-body {
+    min-width: 100%;
   }
 
   .month-day-cell {
-    height: 80px;
-    min-height: 80px;
-    max-height: 80px;
+    height: 70px;
+    min-height: 70px;
+    max-height: 70px;
+    padding: 5px;
+  }
+
+  .month-day-number {
+    font-size: 14px;
+  }
+
+  .booking-event-small {
+    font-size: 9px;
+    padding: 3px 4px;
+  }
+
+  .booking-modal {
+    width: calc(100% - 20px);
+    max-height: 95vh;
+  }
+
+  .booking-modal-header {
+    padding: 15px;
+  }
+
+  .booking-modal-header h2 {
+    font-size: 20px;
+  }
+
+  .booking-modal-content {
+    padding: 15px;
+  }
+
+  .booking-detail-item {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .booking-detail-item label {
+    min-width: 0;
+    margin-right: 0;
+  }
+
+  .status-buttons {
+    flex-direction: column;
+  }
+
+  .status-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-dashboard {
+    padding: 10px;
+  }
+
+  .admin-dashboard-header {
+    padding: 12px;
+  }
+
+  .admin-dashboard-header h1 {
+    font-size: 20px;
+  }
+
+  .calendar-week-header,
+  .week-hour-row {
+    grid-template-columns: 50px repeat(7, minmax(60px, 1fr));
+    min-width: 470px;
+  }
+
+  .week-hour-label {
+    width: 50px;
+    font-size: 10px;
+    padding: 3px;
+  }
+
+  .week-day-header {
+    padding: 8px 3px;
+  }
+
+  .week-day-number {
+    font-size: 14px;
+  }
+
+  .month-day-cell {
+    height: 60px;
+    min-height: 60px;
+    max-height: 60px;
+    padding: 4px;
+  }
+
+  .month-day-number {
+    font-size: 12px;
+  }
+
+  .booking-event-small {
+    font-size: 8px;
+    padding: 2px 3px;
+  }
+
+  .booking-modal {
+    width: calc(100% - 10px);
+    border-radius: 4px;
+  }
+
+  .booking-modal-header {
+    padding: 12px;
+  }
+
+  .booking-modal-header h2 {
+    font-size: 18px;
+  }
+
+  .booking-modal-content {
+    padding: 12px;
   }
 }
 

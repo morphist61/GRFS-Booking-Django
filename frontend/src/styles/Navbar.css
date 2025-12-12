@@ -10,12 +10,14 @@
 
 .navbar-container {
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   height: 60px;
+  box-sizing: border-box;
 }
 
 .navbar-brand {
@@ -27,6 +29,8 @@
   color: #ffffff;
   text-decoration: none;
   transition: opacity 0.3s ease;
+  flex-shrink: 0;
+  min-width: 0;
 }
 
 .navbar-brand:hover {
@@ -50,6 +54,10 @@
   display: flex;
   align-items: center;
   gap: 20px;
+  flex-wrap: wrap;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .navbar-link {
@@ -59,6 +67,8 @@
   border-radius: 4px;
   transition: background-color 0.3s ease;
   font-size: 16px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .navbar-link:hover {
@@ -77,6 +87,10 @@
 .navbar-username {
   color: white;
   font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
 }
 
 .navbar-logout {
@@ -99,11 +113,14 @@
   .navbar-container {
     flex-direction: column;
     height: auto;
-    padding: 10px 20px;
+    padding: 10px 15px;
+    gap: 10px;
   }
 
   .navbar-brand {
     font-size: 20px;
+    width: 100%;
+    justify-content: center;
   }
 
   .navbar-logo {
@@ -113,7 +130,13 @@
   .navbar-menu {
     flex-wrap: wrap;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .navbar-link {
+    font-size: 14px;
+    padding: 6px 12px;
   }
 
   .navbar-user {
@@ -121,8 +144,50 @@
     border-top: 1px solid rgba(255, 255, 255, 0.2);
     padding-top: 10px;
     margin-top: 10px;
+    margin-left: 0;
+    padding-left: 0;
     width: 100%;
     justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .navbar-username {
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .navbar-logout {
+    width: 100%;
+    max-width: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-container {
+    padding: 8px 10px;
+  }
+
+  .navbar-brand {
+    font-size: 18px;
+  }
+
+  .navbar-logo {
+    height: 30px;
+  }
+
+  .navbar-link {
+    font-size: 13px;
+    padding: 5px 10px;
+  }
+
+  .navbar-username {
+    font-size: 14px;
+  }
+
+  .navbar-logout {
+    font-size: 13px;
+    padding: 6px 12px;
   }
 }
 

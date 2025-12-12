@@ -7,6 +7,7 @@
     border-radius: 8px;
     background-color: #f4f4f4;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
   }
   .login-container h2 {
     text-align: center;
@@ -21,6 +22,7 @@
     box-sizing: border-box;
     font-size: 16px;
     font-family: inherit;
+    max-width: 100%;
   }
   
   .password-input-wrapper {
@@ -118,4 +120,28 @@
   .auth-link a:hover {
     color: #d40000;
     text-decoration: underline;
+  }
+
+  @media (max-width: 480px) {
+    .login-container {
+      width: 100%;
+      max-width: 100%;
+      margin: 50px auto;
+      padding: 20px;
+      border-radius: 0;
+    }
+
+    .login-container h2 {
+      font-size: 24px;
+    }
+
+    .login-container input {
+      font-size: 16px; /* Prevents zoom on iOS */
+      padding: 12px;
+    }
+
+    .login-container button[type="submit"] {
+      font-size: 16px; /* Prevents zoom on iOS */
+      padding: 12px;
+    }
   }

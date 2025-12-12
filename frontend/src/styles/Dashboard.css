@@ -1,7 +1,9 @@
 .dashboard-container {
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   padding: 30px 20px;
+  box-sizing: border-box;
 }
 
 .dashboard-container h1 {
@@ -42,6 +44,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 20px;
+  flex-wrap: wrap;
 }
 
 .booking-card.past-booking {
@@ -103,15 +106,19 @@
 
 .booking-details {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 15px;
   margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .booking-details-compact {
   display: flex;
   gap: 20px;
   flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .detail-item {
@@ -345,6 +352,22 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .dashboard-container {
+    padding: 20px 15px;
+  }
+
+  .dashboard-container h1 {
+    font-size: 28px;
+  }
+
+  .dashboard-container h2 {
+    font-size: 20px;
+  }
+
+  .booking-card {
+    padding: 12px 15px;
+  }
+
   .booking-card-content {
     flex-direction: column;
     align-items: flex-start;
@@ -380,22 +403,67 @@
   .btn-delete {
     width: 100%;
   }
+
+  .booking-top-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .booking-top-row .left-side,
+  .booking-top-row .right-side {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-container {
+    padding: 15px 10px;
+  }
+
+  .dashboard-container h1 {
+    font-size: 24px;
+  }
+
+  .dashboard-container h2 {
+    font-size: 18px;
+  }
+
+  .booking-card {
+    padding: 10px 12px;
+  }
+
+  .detail-item strong,
+  .detail-item-compact strong {
+    font-size: 12px;
+  }
+
+  .detail-item span,
+  .detail-item-compact span {
+    font-size: 14px;
+  }
 }
 
 .booking-top-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .booking-top-row .left-side {
   display: flex;
   align-items: center;
   gap: 10px; /* space between room name + badge */
+  flex: 1;
+  min-width: 0;
 }
 
 .booking-top-row .right-side {
   display: flex;
   align-items: center;
   gap: 10px; /* space between buttons */
+  flex-wrap: wrap;
 }

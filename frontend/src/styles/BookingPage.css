@@ -8,9 +8,11 @@ body {
 }
 
 .container {
-  width: 80%;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  box-sizing: border-box;
 }
 
 h2 {
@@ -52,10 +54,17 @@ h4 {
   justify-content: space-between;
   align-items: center;
   border-radius: 5px;
+  flex-wrap: wrap;
+  gap: 10px;
+  overflow: hidden;
 }
 
 .floor-header h3 {
   margin: 0;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .floor-header:hover {
@@ -130,6 +139,8 @@ h4 {
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 /* Book Entire Floor Button */
@@ -143,7 +154,8 @@ h4 {
   cursor: pointer;
   transition: background-color 0.3s ease;
   font-size: 16px;
-  
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .book-floor-btn:hover {
@@ -162,6 +174,8 @@ h4 {
   transition: background-color 0.3s ease;
   font-size: 16px;
   font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .book-camp-btn:hover {
@@ -179,27 +193,56 @@ input[type='checkbox'] {
 /* Responsive Design */
 @media (max-width: 768px) {
   .container {
-    width: 90%;
+    width: 100%;
+    padding: 15px;
   }
 
   h2 {
     font-size: 24px;
+    padding: 15px 10px;
   }
 
   h4 {
-    font-size: 7px;
+    font-size: 12px;
+    display: none; /* Hide on mobile to save space */
   }
 
   .floor-header {
     font-size: 16px;
     padding: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
   }
 
-  
+  .floor-header h3 {
+    width: 100%;
+  }
+
+  .floor-header-buttons {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .book-floor-btn,
+  .book-camp-btn {
+    font-size: 14px;
+    padding: 8px 15px;
+    max-height: none;
+    flex: 1;
+    min-width: 0;
+  }
 
   .room-item {
     font-size: 14px;
     padding: 8px 12px;
+  }
+
+  .room-image {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
   }
 
   button {
@@ -207,7 +250,71 @@ input[type='checkbox'] {
     padding: 8px 15px;
   }
 
+  .booking-form-container {
+    margin: 15px;
+    padding: 15px;
+  }
 
+  .hour-badge {
+    min-width: 50px;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .available-hours {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+  }
+
+  h2 {
+    font-size: 20px;
+    padding: 10px 5px;
+  }
+
+  .floor-header {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .book-floor-btn,
+  .book-camp-btn {
+    font-size: 12px;
+    padding: 6px 12px;
+    width: 100%;
+  }
+
+  .floor-header-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .room-item {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+
+  .room-image {
+    width: 35px;
+    height: 35px;
+    margin-right: 8px;
+  }
+
+  .booking-form-btn {
+    font-size: 16px;
+    padding: 14px 24px;
+    margin: 20px auto;
+  }
+
+  .hour-badge {
+    min-width: 45px;
+    padding: 5px 8px;
+    font-size: 11px;
+  }
 }
 
 
@@ -388,14 +495,15 @@ input[type='checkbox'] {
 }
 
 .hour-badge {
-  padding: 8px 16px;
+  padding: 8px 12px;
   border-radius: 20px;
   font-weight: 600;
   font-size: 14px;
-  min-width: 90px;
+  min-width: 60px;
   text-align: center;
   display: inline-block;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .hour-badge.available {
@@ -537,20 +645,52 @@ input[type='checkbox'] {
 /* Responsive Design for Booking Form */
 @media (max-width: 768px) {
   .booking-form-container {
-    margin: 20px;
-    padding: 20px;
+    margin: 15px;
+    padding: 15px;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .form-actions {
     flex-direction: column;
+    gap: 10px;
   }
 
   .btn-primary,
   .btn-secondary {
     width: 100%;
+    box-sizing: border-box;
   }
 
   .available-hours {
     justify-content: center;
+    gap: 8px;
+  }
+
+  .form-input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .date-input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-form-container {
+    margin: 10px;
+    padding: 12px;
+  }
+
+  .form-group label {
+    font-size: 14px;
+  }
+
+  .form-input,
+  .date-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 10px;
   }
 }
