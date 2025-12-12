@@ -250,7 +250,6 @@ const Dashboard = () => {
 
       {/* Current/Upcoming Bookings */}
       <div className="bookings-section">
-        <h2>Current & Upcoming Bookings</h2>
         {currentBookings.length === 0 ? (
           <p className="no-bookings">No upcoming bookings.</p>
         ) : (

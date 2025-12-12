@@ -13,10 +13,6 @@ logger = logging.getLogger(__name__)
 
 def send_account_creation_email(user):
     """Send email confirmation when a new account is created"""
-    # Email sending is temporarily disabled
-    logger.info(f"Email sending disabled. Skipping account creation email to {user.email}")
-    return
-    
     try:
         subject = 'Welcome to GRFS Booking System - Account Created'
         message = f"""
@@ -54,10 +50,6 @@ GRFS Booking System
 
 def send_account_approval_email(user, approved=True):
     """Send email when account is approved or denied"""
-    # Email sending is temporarily disabled
-    logger.info(f"Email sending disabled. Skipping account approval email to {user.email}")
-    return
-    
     try:
         if approved:
             subject = 'GRFS Booking System - Account Approved'
@@ -103,10 +95,6 @@ GRFS Booking System
 
 def send_booking_creation_email(booking):
     """Send email confirmation when a booking is created"""
-    # Email sending is temporarily disabled
-    logger.info(f"Email sending disabled. Skipping booking creation email for booking {booking.id}")
-    return
-    
     try:
         user = booking.user
         rooms = booking.rooms.all()
@@ -154,10 +142,6 @@ GRFS Booking System
 
 def send_booking_update_email(booking, updated_by_admin=False, old_data=None):
     """Send email when a booking is updated"""
-    # Email sending is temporarily disabled
-    logger.info(f"Email sending disabled. Skipping booking update email for booking {booking.id}")
-    return
-    
     try:
         user = booking.user
         rooms = booking.rooms.all()
@@ -220,10 +204,6 @@ GRFS Booking System
 
 def send_booking_cancellation_email(booking, cancelled_by_admin=False):
     """Send email when a booking is cancelled"""
-    # Email sending is temporarily disabled
-    logger.info(f"Email sending disabled. Skipping booking cancellation email for booking {booking.id}")
-    return
-    
     try:
         user = booking.user
         rooms = booking.rooms.all()
@@ -269,10 +249,6 @@ GRFS Booking System
 
 def send_booking_reminder_email(booking):
     """Send reminder email for upcoming bookings"""
-    # Email sending is temporarily disabled
-    logger.info(f"Email sending disabled. Skipping booking reminder email for booking {booking.id}")
-    return
-    
     try:
         user = booking.user
         rooms = booking.rooms.all()
