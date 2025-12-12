@@ -216,11 +216,29 @@ EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
 EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False').lower() == 'true'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '').strip()
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '').strip()
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', '').strip() or EMAIL_HOST_USER
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
+# Validate email configuration (warn if not set, but don't fail startup)
+if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
+    import warnings
+    warnings.warn(
+        "Email configuration incomplete: EMAIL_HOST_USER and/or EMAIL_HOST_PASSWORD not set. "
+        "Email notifications will not work until these are configured.",
+        UserWarning
+    )
+
 # Site URL for email links (used in email templates)
-SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000' if DEBUG else f"https://{ALLOWED_HOSTS[0] if ALLOWED_HOSTS else 'yourdomain.com'}")
+# Fallback logic: use SITE_URL env var, or construct from ALLOWED_HOSTS, or use localhost
+if os.getenv('SITE_URL'):
+    SITE_URL = os.getenv('SITE_URL').strip()
+elif not DEBUG and ALLOWED_HOSTS:
+    # In production, use first allowed host with https
+    host = ALLOWED_HOSTS[0].strip()
+    SITE_URL = f"https://{host}" if not host.startswith('http') else host
+else:
+    # Development fallback
+    SITE_URL = 'http://localhost:8000'
 
