@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { getUser } from '../services/api';
-import { useEffect, useState } from 'react';
 import '../styles/Navbar.css';
 
 const Navbar = () => {

@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 // Use environment variable for API URL, fallback to localhost for development
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/';
+// In Vite, use import.meta.env instead of process.env
+// Environment variables must be prefixed with VITE_ to be exposed to the client
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
 
 const API = axios.create({
   baseURL: API_BASE_URL,

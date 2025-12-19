@@ -182,3 +182,5 @@ Before deploying, ensure you have set:
 - [ ] `EMAIL_HOST_PASSWORD`
 - [ ] `DEFAULT_FROM_EMAIL`
 - [ ] `SITE_URL`
+
+
