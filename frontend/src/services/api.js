@@ -5,6 +5,12 @@ import axios from 'axios';
 // Environment variables must be prefixed with VITE_ to be exposed to the client
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
 
+// Log API URL in development mode for debugging
+if (import.meta.env.DEV) {
+  console.log('🔧 Development Mode - API Base URL:', API_BASE_URL);
+  console.log('📝 Environment variable VITE_API_URL:', import.meta.env.VITE_API_URL || 'not set (using default)');
+}
+
 const API = axios.create({
   baseURL: API_BASE_URL,
 });

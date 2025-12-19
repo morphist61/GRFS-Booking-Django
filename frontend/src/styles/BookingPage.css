@@ -54,7 +54,7 @@ h4 {
   justify-content: space-between;
   align-items: center;
   border-radius: 5px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 10px;
   overflow: hidden;
 }
@@ -64,7 +64,7 @@ h4 {
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
+
 }
 
 .floor-header:hover {
@@ -138,13 +138,17 @@ h4 {
 .floor-header-buttons {
   display: flex;
   gap: 10px;
+  justify-content: flex-end;  
   align-items: center;
   flex-wrap: wrap;
   flex-shrink: 0;
 }
 
 .floor-header-text {
+  display: flex;
   flex-grow: 1;
+  flex-direction: row;
+  align-items: center;
 }
 
 /* Book Entire Floor Button */
@@ -207,16 +211,15 @@ input[type='checkbox'] {
   }
 
   h4 {
-    font-size: 7px;
+    font-size: 10px;
 
   }
 
   .floor-header {
     font-size: 16px;
     padding: 12px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+    flex-direction: row;
+    gap: 0px;
   }
 
   .floor-header h3 {
@@ -224,8 +227,6 @@ input[type='checkbox'] {
   }
 
   .floor-header-buttons {
-    width: 100%;
-    justify-content: flex-start;
     gap: 8px;
     display: flex;
   }
@@ -235,7 +236,6 @@ input[type='checkbox'] {
     font-size: 14px;
     padding: 8px 15px;
     max-height: none;
-    flex: 1;
     min-width: 0;
   }
 
@@ -281,21 +281,26 @@ input[type='checkbox'] {
     padding: 10px 5px;
   }
 
+  h4 {
+    font-size: 7px;
+  }
+
   .floor-header {
     font-size: 14px;
     padding: 10px;
   }
 
-  .book-floor-btn,
-  .book-camp-btn {
+  .book-floor-btn {
     font-size: 12px;
     padding: 6px 12px;
-    width: 100%;
+    
   }
-
+  .book-camp-btn{
+    font-size: 8px;
+    padding: 6px 12px;
+  }
   .floor-header-buttons {
-    flex-direction: column;
-    width: 100%;
+    flex-direction: row;
   }
 
   .room-item {
@@ -328,7 +333,7 @@ input[type='checkbox'] {
 /* Booking Form Button */
 .booking-form-btn {
   display: block;
-  width: 100%;
+  
   max-width: 400px;
   margin: 30px auto;
   padding: 16px 32px;
@@ -697,5 +702,9 @@ input[type='checkbox'] {
   .date-input {
     font-size: 16px; /* Prevents zoom on iOS */
     padding: 10px;
+  }
+
+  .room-name{
+    font-size: 13px;
   }
 }

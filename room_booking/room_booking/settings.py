@@ -99,27 +99,45 @@ WSGI_APPLICATION = 'room_booking.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Support both PostgreSQL and MySQL (Render uses PostgreSQL)
-
+# Support both PostgreSQL and SQLite
+# Priority:
+#   1. DATABASE_URL (for production/Render)
+#   2. Local PostgreSQL (if USE_SQLITE_FOR_DEV=False and no DATABASE_URL)
+#   3. SQLite (if USE_SQLITE_FOR_DEV=True and no DATABASE_URL)
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 DB_ENGINE = os.getenv('DB_ENGINE', 'postgresql').lower()
+USE_SQLITE_FOR_DEV = os.getenv('USE_SQLITE_FOR_DEV', 'True').lower() == 'true'
+# Force local database even if DATABASE_URL is set (useful for dev branch)
+FORCE_LOCAL_DB = os.getenv('FORCE_LOCAL_DB', 'False').lower() == 'true'
 
-if DATABASE_URL:
+# Priority: FORCE_LOCAL_DB > DATABASE_URL > Local PostgreSQL/SQLite
+if FORCE_LOCAL_DB or (not DATABASE_URL):
+    # Local development: Use local database
+    if DEBUG and USE_SQLITE_FOR_DEV:
+        # Use SQLite (simpler, no setup required)
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
+    else:
+        # Use local PostgreSQL
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.getenv('DB_NAME', 'room_booking'),
+                'USER': os.getenv('DB_USER', 'room_admin'),
+                'PASSWORD': os.getenv('DB_PASSWORD'),
+                'HOST': os.getenv('DB_HOST', 'localhost'),
+                'PORT': os.getenv('DB_PORT', '5432'),
+            }
+        }
+else:
+    # Production: Use DATABASE_URL (from Render or other hosting)
     DATABASES = {
         "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600)
-    }
-else:
-    # Local fallback (if no DATABASE_URL is set)
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', 'room_booking'),
-            'USER': os.getenv('DB_USER', 'room_admin'),
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DB_HOST', 'localhost'),
-            'PORT': os.getenv('DB_PORT', '5432'),
-        }
     }
 
 
