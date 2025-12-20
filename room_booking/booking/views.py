@@ -13,14 +13,55 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from datetime import datetime, timedelta
 from django.db.models import Q
+from django.http import HttpResponse
+from django.conf import settings
 import pytz
 import logging
+import os
 
 # Create your views here.
 
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
+
+# View to serve React app in production
+def serve_react_app(request):
+    """Serve the React app's index.html for all non-API routes"""
+    try:
+        # Try multiple possible template locations
+        possible_paths = [
+            os.path.join(settings.BASE_DIR, 'booking', 'templates', 'index.html'),
+            os.path.join(settings.BASE_DIR, 'room_booking', 'booking', 'templates', 'index.html'),
+        ]
+        
+        template_path = None
+        for path in possible_paths:
+            if os.path.exists(path):
+                template_path = path
+                break
+        
+        if template_path:
+            with open(template_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                response = HttpResponse(content, content_type='text/html; charset=utf-8')
+                # Add security headers
+                response['X-Content-Type-Options'] = 'nosniff'
+                return response
+        else:
+            logger.error(f"React template not found. Checked paths: {possible_paths}")
+            return HttpResponse(
+                "React app template not found. Please rebuild the frontend.",
+                status=500,
+                content_type='text/plain'
+            )
+    except Exception as e:
+        logger.error(f"Error serving React app: {str(e)}", exc_info=True)
+        return HttpResponse(
+        f"Error loading React app: {str(e)}",
+            status=500,
+            content_type='text/plain'
+        )
 
 def check_booking_conflicts(room_ids, start_datetime, end_datetime, exclude_booking_id=None):
     """
