@@ -1,9 +1,9 @@
 services:
   # Django Backend Service
   - type: web
-    name: grfs-booking-backend
+    name: GRFS Room Booking
     env: python
-    plan: free
+    plan: starter
     buildCommand: |
       set -e
       echo "Starting build process..."
