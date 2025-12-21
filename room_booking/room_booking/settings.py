@@ -229,24 +229,34 @@ if not DEBUG:
         CORS_ALLOWED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host]
 
 # Email Configuration
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
-EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False').lower() == 'true'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '').strip()
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '').strip()
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', '').strip() or EMAIL_HOST_USER
-SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
-# Validate email configuration (warn if not set, but don't fail startup)
-if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
+# Only use SMTP backend if email credentials are configured
+# Otherwise use console backend to prevent connection errors
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+    EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+    EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
+    EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False').lower() == 'true'
+    DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', '').strip() or EMAIL_HOST_USER
+else:
+    # Use console backend when email is not configured to prevent connection errors
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    EMAIL_HOST = ''
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = False
+    EMAIL_USE_SSL = False
+    DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@example.com').strip()
     import warnings
     warnings.warn(
         "Email configuration incomplete: EMAIL_HOST_USER and/or EMAIL_HOST_PASSWORD not set. "
-        "Email notifications will not work until these are configured.",
+        "Using console email backend. Email notifications will be logged to console only.",
         UserWarning
     )
+
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Site URL for email links (used in email templates)
 # Fallback logic: use SITE_URL env var, or construct from ALLOWED_HOSTS, or use localhost

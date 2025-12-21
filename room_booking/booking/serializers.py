@@ -102,14 +102,17 @@ class UserSerializer(serializers.ModelSerializer):
             user.save()
             
             # Send account creation email (don't fail registration if email fails)
+            # Wrap in try/except to catch any network/DNS errors
             try:
                 from .email_utils import send_account_creation_email
                 send_account_creation_email(user)
             except Exception as e:
                 # Log error but don't fail registration if email fails
+                # This includes network errors like "Name or service not known"
                 import logging
                 logger = logging.getLogger(__name__)
-                logger.error(f"Failed to send account creation email: {str(e)}")
+                logger.error(f"Failed to send account creation email (non-blocking): {str(e)}", exc_info=True)
+                # Continue with registration even if email fails
             
             return user
         except serializers.ValidationError:

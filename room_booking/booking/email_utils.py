@@ -13,11 +13,17 @@ logger = logging.getLogger(__name__)
 
 def is_email_configured():
     """Check if email is properly configured"""
-    return (
+    # Check if email credentials are set
+    has_credentials = (
         settings.EMAIL_HOST_USER and 
         settings.EMAIL_HOST_PASSWORD and 
         settings.DEFAULT_FROM_EMAIL
     )
+    
+    # Also check if EMAIL_HOST is set (required for SMTP)
+    has_host = bool(settings.EMAIL_HOST)
+    
+    return has_credentials and has_host
 
 
 def send_account_creation_email(user):
@@ -54,11 +60,13 @@ GRFS Booking System
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
-            fail_silently=False,
+            fail_silently=True,  # Don't raise exceptions - just log them
         )
         logger.info(f"Account creation email sent to {user.email}")
     except Exception as e:
-        logger.error(f"Failed to send account creation email to {user.email}: {str(e)}")
+        # Catch all exceptions including network errors (DNS, connection, etc.)
+        logger.error(f"Failed to send account creation email to {user.email}: {str(e)}", exc_info=True)
+        # Don't re-raise - email failures shouldn't break registration
 
 
 def send_account_approval_email(user, approved=True):
