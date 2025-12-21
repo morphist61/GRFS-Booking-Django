@@ -653,12 +653,21 @@ class RegisterView(generics.CreateAPIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
         except DatabaseError as e:
-            # General database errors
+            # General database errors (including connection errors)
+            error_str = str(e).lower()
             logger.error(f"Database error in registration: {str(e)}", exc_info=True)
-            return Response(
-                {"detail": "A database error occurred. Please try again later."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            
+            # Check for connection errors
+            if 'name or service not known' in error_str or 'could not translate host name' in error_str:
+                return Response(
+                    {"detail": "Database connection failed. Please contact the administrator."},
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE
+                )
+            else:
+                return Response(
+                    {"detail": "A database error occurred. Please try again later."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
         except Exception as e:
             # Catch any other unexpected errors
             logger.error(f"Unexpected error in user registration: {str(e)}", exc_info=True)
@@ -718,6 +727,14 @@ class LoginSerializer(TokenObtainPairSerializer):
         except AuthenticationFailed:
             # Re-raise authentication failures as-is
             raise
+        except DatabaseError as e:
+            # Database connection errors
+            error_str = str(e).lower()
+            logger.error(f"Database error in login: {str(e)}", exc_info=True)
+            if 'name or service not known' in error_str or 'could not translate host name' in error_str:
+                raise AuthenticationFailed("Database connection failed. Please contact the administrator.")
+            else:
+                raise AuthenticationFailed("A database error occurred. Please try again later.")
         except Exception as e:
             # Log unexpected errors
             logger.error(f"Error in login validation: {str(e)}", exc_info=True)
