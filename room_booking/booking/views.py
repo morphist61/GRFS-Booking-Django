@@ -14,6 +14,8 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from django.db.models import Q
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from django.conf import settings
 import pytz
 import logging
@@ -26,42 +28,41 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 # View to serve React app in production
+@csrf_exempt  # Exempt from CSRF since this is just serving static HTML
 def serve_react_app(request):
     """Serve the React app's index.html for all non-API routes"""
+    # Only handle GET and HEAD requests
+    if request.method not in ['GET', 'HEAD']:
+        return HttpResponse('Method not allowed', status=405)
+    
     try:
-        # Try multiple possible template locations
-        possible_paths = [
-            os.path.join(settings.BASE_DIR, 'booking', 'templates', 'index.html'),
-            os.path.join(settings.BASE_DIR, 'room_booking', 'booking', 'templates', 'index.html'),
-        ]
-        
-        template_path = None
-        for path in possible_paths:
-            if os.path.exists(path):
-                template_path = path
-                break
-        
-        if template_path:
-            with open(template_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-                response = HttpResponse(content, content_type='text/html; charset=utf-8')
-                # Add security headers
-                response['X-Content-Type-Options'] = 'nosniff'
-                return response
-        else:
-            logger.error(f"React template not found. Checked paths: {possible_paths}")
+        # Use Django's template system to render the template
+        # This is more reliable than manually reading the file
+        return render(request, 'index.html', {}, content_type='text/html')
+    except Exception as e:
+        # Fallback: try to read the file directly if template rendering fails
+        try:
+            template_path = os.path.join(settings.BASE_DIR, 'booking', 'templates', 'index.html')
+            if os.path.exists(template_path):
+                with open(template_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    return HttpResponse(content, content_type='text/html; charset=utf-8')
+            else:
+                error_msg = f"React template not found at: {template_path}. BASE_DIR: {settings.BASE_DIR}"
+                logger.error(error_msg)
+                return HttpResponse(
+                    f"React app template not found. Please rebuild the frontend.\n{error_msg}",
+                    status=500,
+                    content_type='text/plain'
+                )
+        except Exception as e2:
+            error_msg = f"Error serving React app: {str(e)} (fallback also failed: {str(e2)})"
+            logger.error(error_msg, exc_info=True)
             return HttpResponse(
-                "React app template not found. Please rebuild the frontend.",
+                f"Error loading React app: {str(e)}",
                 status=500,
                 content_type='text/plain'
             )
-    except Exception as e:
-        logger.error(f"Error serving React app: {str(e)}", exc_info=True)
-        return HttpResponse(
-        f"Error loading React app: {str(e)}",
-            status=500,
-            content_type='text/plain'
-        )
 
 def check_booking_conflicts(room_ids, start_datetime, end_datetime, exclude_booking_id=None):
     """
@@ -622,29 +623,50 @@ class RegisterView(generics.CreateAPIView):
 class LoginSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
-        token = super().get_token(user)
-        token['username'] = user.username
-        token['role'] = user.role
-        return token
+        try:
+            token = super().get_token(user)
+            # Safely add user attributes to token
+            if hasattr(user, 'username'):
+                token['username'] = user.username
+            else:
+                token['username'] = user.email  # Fallback to email if username not set
+            if hasattr(user, 'role'):
+                token['role'] = user.role
+            else:
+                token['role'] = 'user'  # Default role
+            return token
+        except Exception as e:
+            logger.error(f"Error generating token for user {user.email}: {str(e)}", exc_info=True)
+            raise
     
     def validate(self, attrs):
-        data = super().validate(attrs)
-        user = self.user
-        
-        # Check if user is approved
-        if user.approval_status == 'pending':
-            raise AuthenticationFailed(
-                "Your account is pending approval. Please wait for an admin to approve your account."
-            )
-        elif user.approval_status == 'denied':
-            raise AuthenticationFailed(
-                "Your account has been denied. Please contact an administrator."
-            )
-        
-        return data
+        try:
+            data = super().validate(attrs)
+            user = self.user
+            
+            # Check if user is approved
+            if hasattr(user, 'approval_status'):
+                if user.approval_status == 'pending':
+                    raise AuthenticationFailed(
+                        "Your account is pending approval. Please wait for an admin to approve your account."
+                    )
+                elif user.approval_status == 'denied':
+                    raise AuthenticationFailed(
+                        "Your account has been denied. Please contact an administrator."
+                    )
+            
+            return data
+        except AuthenticationFailed:
+            # Re-raise authentication failures as-is
+            raise
+        except Exception as e:
+            # Log unexpected errors
+            logger.error(f"Error in login validation: {str(e)}", exc_info=True)
+            raise AuthenticationFailed("An error occurred during login. Please try again later.")
 
 class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
+    permission_classes = [permissions.AllowAny]  # Allow unauthenticated access for login
     
 class UserDetailView(APIView):
     permission_classes = [permissions.IsAuthenticated]

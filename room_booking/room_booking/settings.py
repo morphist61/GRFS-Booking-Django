@@ -35,7 +35,25 @@ if not SECRET_KEY:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
+# ALLOWED_HOSTS configuration
+# In production, this must be set to your domain(s)
+# For Render, set it to: your-app-name.onrender.com
+ALLOWED_HOSTS_ENV = os.getenv('ALLOWED_HOSTS', '')
+if ALLOWED_HOSTS_ENV:
+    # Split by comma and strip whitespace
+    ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_ENV.split(',') if host.strip()]
+else:
+    # Default to empty list (will cause 400 errors in production if not set)
+    ALLOWED_HOSTS = []
+    
+# Log warning if ALLOWED_HOSTS is empty in production
+if not DEBUG and not ALLOWED_HOSTS:
+    import warnings
+    warnings.warn(
+        "ALLOWED_HOSTS is empty in production. This will cause 400 Bad Request errors. "
+        "Set ALLOWED_HOSTS environment variable with your domain(s).",
+        UserWarning
+    )
 
 
 # Application definition
