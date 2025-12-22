@@ -17,4 +17,5 @@ urlpatterns = [
     path('admin/pending-users/', PendingUsersView.as_view(), name='pending-users'),
     path('admin/approve-user/<int:user_id>/', ApproveUserView.as_view(), name='approve-user'),
     path('admin/bookings/<int:booking_id>/status/', UpdateBookingStatusView.as_view(), name='update-booking-status'),
+    path('admin/bookings/delete-all/', DeleteAllBookingsView.as_view(), name='delete-all-bookings'),
 ]

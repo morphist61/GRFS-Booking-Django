@@ -19,7 +19,7 @@ from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
-from booking.views import serve_react_app
+from booking.views import serve_react_app, serve_media
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,9 +31,12 @@ urlpatterns = [
 if not settings.DEBUG:
     urlpatterns += [
         path('', serve_react_app, name='react-app'),
+        # Serve media files in production
+        re_path(r'^media/(?P<path>.*)$', serve_media, name='media'),
         # Exclude api/, admin/, static/, media/, and common static files from catch-all
         # static/ is where Vite outputs CSS/JS files (configured in vite.config.js)
         re_path(r'^(?!api/|admin/|static/|media/|favicon\.ico|robots\.txt|manifest\.json).*$', serve_react_app),
-    ]else:
+    ]
+else:
     # Development: serve media if you're testing uploads
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
