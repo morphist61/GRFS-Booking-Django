@@ -26,9 +26,6 @@ urlpatterns = [
     path('api/', include('booking.urls')),
 ]
 
-# Serve media files in both development and production
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
 # Serve React app for all non-API, non-admin routes (production)
 # This allows React Router to handle client-side routing
 if not settings.DEBUG:
@@ -37,4 +34,6 @@ if not settings.DEBUG:
         # Exclude api/, admin/, static/, media/, and common static files from catch-all
         # static/ is where Vite outputs CSS/JS files (configured in vite.config.js)
         re_path(r'^(?!api/|admin/|static/|media/|favicon\.ico|robots\.txt|manifest\.json).*$', serve_react_app),
-    ]
+    ]else:
+    # Development: serve media if you're testing uploads
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
