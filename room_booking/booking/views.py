@@ -1102,3 +1102,42 @@ class DeleteAllBookingsView(APIView):
                 {"detail": "An error occurred while deleting all bookings."}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+class UpdateRoomImageView(APIView):
+    """View to update room image - Admin only"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def put(self, request, room_id):
+        try:
+            # Only admins can update room images
+            if request.user.role != 'admin':
+                return Response(
+                    {"detail": "You do not have permission to update room images."}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            room = get_object_or_404(Room, id=room_id)
+            
+            # Check if image is provided
+            if 'image' not in request.FILES:
+                return Response(
+                    {"detail": "Image file is required."}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Update room image
+            room.image = request.FILES['image']
+            room.save()
+            
+            # Return updated room data
+            serializer = RoomSerializer(room)
+            return Response(
+                {"detail": "Room image updated successfully.", "room": serializer.data}, 
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            logger.error(f"Error updating room image: {str(e)}", exc_info=True)
+            return Response(
+                {"detail": "An error occurred while updating room image."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

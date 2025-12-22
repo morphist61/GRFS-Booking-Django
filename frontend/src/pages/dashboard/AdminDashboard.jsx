@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { getAllBookings, getRooms, deleteBooking, updateBooking, checkAvailability, getPendingUsers, approveUser, updateBookingStatus, deleteAllBookings } from '../../services/api';
+import { getAllBookings, getRooms, deleteBooking, updateBooking, checkAvailability, getPendingUsers, approveUser, updateBookingStatus, deleteAllBookings, updateRoomImage } from '../../services/api';
 import '../../styles/AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -20,6 +20,8 @@ const AdminDashboard = () => {
   const [pendingUsers, setPendingUsers] = useState([]);
   const [showPendingUsers, setShowPendingUsers] = useState(false);
   const [selectedUserRole, setSelectedUserRole] = useState({});
+  const [showRoomImages, setShowRoomImages] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState({});
 
   const fetchEditAvailability = useCallback(async (date, roomIds) => {
     if (!date || roomIds.length === 0) return;
@@ -127,6 +129,38 @@ const AdminDashboard = () => {
       setRooms(response.data || []);
     } catch (err) {
       console.error('Failed to fetch rooms:', err);
+    }
+  };
+
+  const handleImageUpload = async (roomId, event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file.');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size must be less than 5MB.');
+      return;
+    }
+
+    setUploadingImage({ ...uploadingImage, [roomId]: true });
+
+    try {
+      await updateRoomImage(roomId, file);
+      // Refresh rooms to get updated image URLs
+      await fetchRooms();
+      alert('Room image uploaded successfully!');
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Failed to upload image');
+    } finally {
+      setUploadingImage({ ...uploadingImage, [roomId]: false });
+      // Reset file input
+      event.target.value = '';
     }
   };
 
@@ -678,6 +712,12 @@ const AdminDashboard = () => {
               {showPendingUsers ? 'Hide' : 'Show'} Pending Users ({pendingUsers.length})
             </button>
             <button 
+              className={`view-btn ${showRoomImages ? 'active' : ''}`}
+              onClick={() => setShowRoomImages(!showRoomImages)}
+            >
+              {showRoomImages ? 'Hide' : 'Manage'} Room Images
+            </button>
+            <button 
               className="delete-all-btn"
               onClick={handleDeleteAllBookings}
               style={{
@@ -784,6 +824,92 @@ const AdminDashboard = () => {
                         Deny
                       </button>
                     </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {showRoomImages && (
+        <div className="room-images-section" style={{ marginBottom: '20px', padding: '20px', backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #ddd' }}>
+          <h2>Manage Room Images</h2>
+          {rooms.length === 0 ? (
+            <p>No rooms available.</p>
+          ) : (
+            <div className="room-images-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
+              {rooms.map(room => (
+                <div key={room.id} className="room-image-card" style={{ 
+                  padding: '15px', 
+                  backgroundColor: '#f9f9f9', 
+                  borderRadius: '5px',
+                  border: '1px solid #ddd'
+                }}>
+                  <div style={{ marginBottom: '10px' }}>
+                    <strong>{formatRoomName(room)}</strong>
+                  </div>
+                  {room.image ? (
+                    <div style={{ marginBottom: '10px' }}>
+                      <img 
+                        src={(() => {
+                          if (room.image.startsWith('http')) {
+                            return room.image;
+                          }
+                          const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/', '') || 'http://localhost:8000';
+                          const imagePath = room.image.startsWith('/') ? room.image : '/' + room.image;
+                          return baseUrl + imagePath;
+                        })()}
+                        alt={room.name}
+                        style={{ 
+                          width: '100%', 
+                          maxHeight: '200px', 
+                          objectFit: 'cover', 
+                          borderRadius: '4px',
+                          border: '1px solid #ddd'
+                        }}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div style={{ 
+                      marginBottom: '10px', 
+                      padding: '40px', 
+                      backgroundColor: '#e9e9e9', 
+                      borderRadius: '4px',
+                      textAlign: 'center',
+                      color: '#666'
+                    }}>
+                      No image uploaded
+                    </div>
+                  )}
+                  <div>
+                    <label 
+                      htmlFor={`room-image-${room.id}`}
+                      style={{
+                        display: 'inline-block',
+                        padding: '8px 16px',
+                        backgroundColor: uploadingImage[room.id] ? '#ccc' : '#1a3970',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: uploadingImage[room.id] ? 'not-allowed' : 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      {uploadingImage[room.id] ? 'Uploading...' : room.image ? 'Change Image' : 'Upload Image'}
+                    </label>
+                    <input
+                      type="file"
+                      id={`room-image-${room.id}`}
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(room.id, e)}
+                      style={{ display: 'none' }}
+                      disabled={uploadingImage[room.id]}
+                    />
                   </div>
                 </div>
               ))}

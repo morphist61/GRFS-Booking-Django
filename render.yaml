@@ -1,9 +1,9 @@
 services:
   # Django Backend Service
   - type: web
-    name: GRFS Room Booking
+    name: grfs-booking-backend
     env: python
-    plan: starter
+    plan: free
     buildCommand: |
       set -e
       echo "Starting build process..."
@@ -46,13 +46,8 @@ services:
         exit 1
       fi
 
-      # Copy static directory contents (Vite outputs to 'static' directory)
-      if [ -d "frontend/build/static" ]; then
-        cp -r frontend/build/static/* room_booking/staticfiles/
-      fi
-      
-      # Copy other files from build root (favicon, manifest, robots.txt, logo, etc.)
-      find frontend/build -maxdepth 1 -type f ! -name "index.html" -exec cp {} room_booking/staticfiles/ \;
+      # Copy all static assets (everything except index.html)
+      find frontend/build -mindepth 1 -maxdepth 1 ! -name "index.html" -exec cp -r {} room_booking/staticfiles/ \;
       
       # Copy other assets (favicon, manifest, robots.txt, etc.)
       if [ -f "frontend/build/favicon.ico" ]; then
@@ -93,14 +88,7 @@ services:
       fi
 
       echo "Collecting static files..."
-      echo "Note: collectstatic requires SECRET_KEY. If not set, will skip (static files already copied from React build)"
-      set +e  # Allow collectstatic to fail without stopping build
-      python manage.py collectstatic --noinput 2>&1 || {
-        echo "WARNING: collectstatic failed (SECRET_KEY may not be set during build)."
-        echo "This is normal - static files from React build have already been copied manually."
-        echo "collectstatic can be run manually after deployment if needed."
-      }
-      set -e  # Re-enable exit on error
+      python manage.py collectstatic --noinput
 
       echo "Build completed successfully!"
     startCommand: cd room_booking && gunicorn room_booking.wsgi:application --bind 0.0.0.0:$PORT

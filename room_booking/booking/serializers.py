@@ -164,10 +164,11 @@ class RoomSerializer(serializers.ModelSerializer):
     floor_id = serializers.PrimaryKeyRelatedField(
         queryset=Floor.objects.all(), source='floor', write_only=True
     )
+    image = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = Room
-        fields = ['id', 'name', 'floor', 'floor_id']
+        fields = ['id', 'name', 'floor', 'floor_id', 'image']
 
 class BookingSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)

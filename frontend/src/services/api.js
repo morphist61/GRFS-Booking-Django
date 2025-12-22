@@ -157,3 +157,19 @@ export const updateBookingStatus = async (bookingId, status) => {
 export const deleteAllBookings = async () => {
   return await API.delete('admin/bookings/delete-all/');
 };
+
+export const updateRoomImage = async (roomId, imageFile) => {
+  const formData = new FormData();
+  formData.append('image', imageFile);
+  
+  // Create a custom axios instance for file uploads (without JSON content-type)
+  const token = localStorage.getItem('access');
+  const headers = {
+    'Content-Type': 'multipart/form-data',
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  
+  return await axios.put(`${API_BASE_URL}admin/rooms/${roomId}/image/`, formData, { headers });
+};
