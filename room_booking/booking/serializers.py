@@ -164,20 +164,10 @@ class RoomSerializer(serializers.ModelSerializer):
     floor_id = serializers.PrimaryKeyRelatedField(
         queryset=Floor.objects.all(), source='floor', write_only=True
     )
-    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Room
-        fields = ['id', 'name', 'floor', 'floor_id', 'image']
-    
-    def get_image(self, obj):
-        """Return the full URL for the room image"""
-        if obj.image:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.image.url)
-            return obj.image.url
-        return None
+        fields = ['id', 'name', 'floor', 'floor_id']
 
 class BookingSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)

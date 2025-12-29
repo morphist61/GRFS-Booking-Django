@@ -14,7 +14,7 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from django.db.models import Q
 from django.db import IntegrityError, DatabaseError
-from django.http import HttpResponse, Http404, FileResponse
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.conf import settings
@@ -30,14 +30,6 @@ User = get_user_model()
 
 # View to serve React app in production
 @csrf_exempt  # Exempt from CSRF since this is just serving static HTML
-@csrf_exempt
-def serve_media(request, path):
-    """Serve media files in production"""
-    file_path = os.path.join(settings.MEDIA_ROOT, path)
-    if os.path.exists(file_path) and os.path.isfile(file_path):
-        return FileResponse(open(file_path, 'rb'))
-    raise Http404("Media file not found")
-
 def serve_react_app(request):
     """Serve the React app's index.html for all non-API routes"""
     # Only handle GET and HEAD requests
@@ -370,7 +362,7 @@ class RoomListView(APIView):
                 rooms = Room.objects.select_related('floor').filter(floor_id=floor_id)  # Filter rooms by floor
             else:
                 rooms = Room.objects.select_related('floor').all()  # Return all rooms if no floor ID is provided
-            serializer = RoomSerializer(rooms, many=True, context={'request': request})
+            serializer = RoomSerializer(rooms, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except (ValueError, TypeError) as e:
             return Response(
@@ -395,7 +387,7 @@ class BookingListCreateView(APIView):
                 bookings = Booking.objects.select_related('user').prefetch_related('rooms', 'rooms__floor').all()
             else:
                 bookings = Booking.objects.select_related('user').prefetch_related('rooms', 'rooms__floor').filter(user=request.user)
-            serializer = BookingSerializer(bookings, many=True, context={'request': request})
+            serializer = BookingSerializer(bookings, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except (ValueError, TypeError) as e:
             return Response(
@@ -437,7 +429,7 @@ class MyBookingView(APIView):
     def get(self, request):
         try:
             bookings = Booking.objects.select_related('user').prefetch_related('rooms', 'rooms__floor').filter(user=request.user)
-            serializer = BookingSerializer(bookings, many=True, context={'request': request})
+            serializer = BookingSerializer(bookings, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except (ValueError, TypeError) as e:
             return Response(
@@ -476,7 +468,7 @@ class BookingDetailView(APIView):
                     {"detail": "Booking not found or you don't have permission to view it."}, 
                     status=status.HTTP_404_NOT_FOUND
                 )
-            serializer = BookingSerializer(booking, context={'request': request})
+            serializer = BookingSerializer(booking)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             logger.error(f"Error fetching booking: {str(e)}", exc_info=True)
