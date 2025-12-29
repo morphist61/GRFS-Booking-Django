@@ -72,20 +72,7 @@ services:
       cd room_booking
 
       echo "Running migrations..."
-      echo "Note: If database is not yet available, migrations will be skipped and can be run manually after deployment"
-      set +e  # Allow migrations to fail without stopping build
-      python manage.py migrate --noinput 2>&1
-      MIGRATION_EXIT_CODE=$?
-      set -e  # Re-enable exit on error
-      if [ $MIGRATION_EXIT_CODE -eq 0 ]; then
-        echo "Migrations completed successfully"
-      else
-        echo "WARNING: Migration failed (exit code: $MIGRATION_EXIT_CODE)"
-        echo "Database may not be available during build phase."
-        echo "This is normal - migrations can be run manually after deployment via Render Shell:"
-        echo "  cd room_booking && python manage.py migrate"
-        echo "Continuing build..."
-      fi
+      python manage.py migrate --noinput
 
       echo "Collecting static files..."
       python manage.py collectstatic --noinput
